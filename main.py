@@ -1,8 +1,10 @@
 from tkinter import *
-PROGRAM_NAME = " Protein/Fat/Hydrocarb Calcualtor  "
+from tkinter import ttk
+
+PROGRAM_NAME = " Protein/Fat/Hydrocarb Calcualtor "
 
 # Products contain products name and values of protein/fat/hydrocarb/kKal per 100gramm 
-products = {
+PRODUCTS = {
     "Абрикосы":[1,0,10,45],
     "Авокадо":[2,19,7,197],
     "Аджика":[2,3,8,59],
@@ -394,9 +396,11 @@ products = {
     "Яйца":[15,13,1,162]
 }
 
-p_names = list(products.keys())
+p_names = list(PRODUCTS.keys())
 root=Tk()
 root.title(PROGRAM_NAME)
+
+ttk.Style().configure("TButton", bd = 1, relief=RAISED, width=11)
 
 def to_box_2():
     """ Replace chosen product form box_1 to box_2 """
@@ -410,6 +414,7 @@ def to_box_2():
         box_1.delete(i)
         press()
 
+
 def to_box_1():
     """ Replace chosen product form box_2 to box_2 """
 
@@ -418,7 +423,6 @@ def to_box_1():
     for i in select:
         box_1.insert(END, box_2.get(i)[0])
         box_2.delete(i)
-        print('i=', i)
         # delete from u_box_2_list the product.
         u_box_2_list.pop(i)
         press()
@@ -466,22 +470,19 @@ def calculator(eated_food: list) -> list:
 
     if not eated_food:
         return output
-
     total_protein = 0
     total_fat = 0
     total_hydrocarb = 0
     total_kkal = 0
-
     for product in eated_food:
-        if product[0] in products:
+        if product[0] in PRODUCTS:
             # protein = mass * (value per 100gr)
-            total_protein += product[1] * products[product[0]][0] / 100
-            total_fat += product[1] * products[product[0]][1] / 100
-            total_hydrocarb += product[1] * products[product[0]][2] / 100
-            total_kkal += product[1] * products[product[0]][3] / 100
+            total_protein += product[1] * PRODUCTS[product[0]][0] / 100
+            total_fat += product[1] * PRODUCTS[product[0]][1] / 100
+            total_hydrocarb += product[1] * PRODUCTS[product[0]][2] / 100
+            total_kkal += product[1] * PRODUCTS[product[0]][3] / 100
         else: 
             print('ERR!: ', product)
-
 
     # Food energy
     # https://en.wikipedia.org/wiki/Food_energy
@@ -495,37 +496,51 @@ def calculator(eated_food: list) -> list:
         int(total_protein),
         int(total_protein_kkal),
         round((total_protein_kkal/total_kkal * 100), 1),
-
         int(total_fat),
         int(total_fat_kkal),
         round((total_fat_kkal/total_kkal * 100), 1),
-
         int(total_hydrocarb),
         int(total_hydrocarb_kkal),
         round((total_hydrocarb_kkal/total_kkal * 100), 1),
-        
         int(total_kkal)
     ]
-
     return output
 
 
 def show_about_window():
-    # pass
-    about = PanedWindow(master=root, background='blue')
+    about_text = """Программа создана для образовательных целей;\nразработчик не несет никакой ответственности о результатах программы.\n
+        Обратную связь с разработчиком: kovalyov.volodymyr@gmail.com
+        """
+    newwin = Toplevel(root)
+    display = Label(newwin, text=about_text, justify=LEFT, wraplength=500)
+    display.pack()  
 
-def undo_callback(self):
-    pass
+
+def show_help_window():
+    helptext = """Калькулятор белков, жиров, углеводов и калорий (Далее - БЖУК).\n
+        Как пользоваться:
+          - Выбираете продукт из списка слева, выделяете его кликом на нем.\n 
+          - Вносите вес продукта в средней части окна (по умолчанию программа предполагает что вы потребляте по 100 грамм продукта).\n
+          - Кликаете на кнопку [↦]. Продукт с указанной массой перемещается во второй список. - Кнопкой [↤] можно удалить продукт из списка (этот продукт теперь будет в конце первого списка). Программа автоматически считает общую величину БЖУК для выбранного набора продуктов.\n\n
+        FAQ
+    • Можно ли редактировать общий список продуктов, изменять калорийность?
+     - На данном этапе - нет. В случае развития проекта, данная функциональность может быть добавлена.
+    • Как поддержать проект?
+     - Исходный код проекта находится по ссылке: https://github.com/vovoka/keto-calculator-ru-
+     - Если вы не программист/ка, пишите на kovalyov.volodymyr@gmail.com.
+        """
+    newwin = Toplevel(root)
+    display = Label(newwin, text=helptext, justify=LEFT, wraplength=300, width = 60)
+    display.pack()  
 
 # Add Menubar in the widget
-menu_bar = Menu(root)
-file_menu = Menu(menu_bar, tearoff=0)
-# all file menu-items will be added here next
-menu_bar.add_cascade(label='About', menu=file_menu)
-# menu_bar.add_cascade(label='Help', menu=file_menu)
-# file_menu.add_command(label="Undo",
-# compound='left', command=show_about_window)
-root.config(menu=menu_bar)
+menubar = Menu(root)
+helpmenu = Menu(menubar, tearoff=0)
+helpmenu.add_command(label="How to", command=show_help_window)
+helpmenu.add_command(label="About", command=show_about_window)
+menubar.add_cascade(label="Help", menu=helpmenu)
+root.config(menu=menubar)
+
 
 top=Frame()
 top.pack(side=TOP)
@@ -551,12 +566,12 @@ mid.pack(side=LEFT)
 
 Label(mid, text="gram").pack()
 default_mass = StringVar(mid, value='100')
-enter_mass = Entry(mid, textvariable=default_mass, width=8)
+enter_mass = Entry(mid, textvariable=default_mass, width=4)
 enter_mass.pack()
 mass = enter_mass.get()
 
-Button(mid, text="==>", command=to_box_2).pack()
-Button(mid, text="<==", command=to_box_1).pack()
+Button(mid, text="↦", command=to_box_2).pack()
+Button(mid, text="↤", command=to_box_1).pack()
 
 box_2=Listbox(top, selectmode=EXTENDED, height= 25)
 box_2.pack(side=LEFT)
@@ -565,46 +580,50 @@ scroll.pack(side=LEFT, fill=Y)
 box_2.config(yscrollcommand=scroll.set)
 
 # Report header
-Report_dummy = Label(right_fr, bd = 1, relief=RAISED, width=13)
+Report_dummy = ttk.Button(right_fr)
 Report_dummy.grid(row = 1, column = 1)
-Report_gram = Label(right_fr, text="грам", bd = 1, relief=RAISED, width=13)
+Report_gram = ttk.Button(right_fr, text="грам")
 Report_gram.grid(row = 1, column = 2)
-Report_kkal = Label(right_fr, text="кКал", bd=1, relief=RAISED, width=13)
-Report_kkal.grid(row = 1, column = 4)
-Report_percent = Label(right_fr, text="%", bd=1, relief=RAISED, width=13)
-Report_percent.grid(row = 1, column = 6)
+Report_kkal = ttk.Button(right_fr, text="кКал")
+Report_kkal.grid(row = 1, column = 3)
+Report_percent = ttk.Button(right_fr, text="%")
+Report_percent.grid(row = 1, column = 4)
+
 # Protein
-Report_P_name = Label(right_fr, text="Белки", bd=1, relief=RAISED, width=13)
+Report_P_name = ttk.Button(right_fr, text="Белки")
 Report_P_name.grid(row = 2, column = 1)
-Report_P_gram = Label(right_fr, bd=1, relief=RAISED, width=13)
+Report_P_gram = ttk.Button(right_fr)
 Report_P_gram.grid(row = 2, column = 2)
-Report_P_kkal = Label(right_fr, bd=1, relief=RAISED, width=13)
-Report_P_kkal.grid(row = 2, column = 4)
-Report_P_percent = Label(right_fr, bd=1, relief=RAISED, width=13)
-Report_P_percent.grid(row = 2, column = 6)
+Report_P_kkal = ttk.Button(right_fr)
+Report_P_kkal.grid(row = 2, column = 3)
+Report_P_percent = ttk.Button(right_fr)
+Report_P_percent.grid(row = 2, column = 4)
+
 # Fat report
-Report_F_name = Label(right_fr, text="Жиры", bd=1, relief=RAISED, width=13)
+Report_F_name = ttk.Button(right_fr, text="Жиры")
 Report_F_name.grid(row = 3, column = 1)
-Report_F_gram = Label(right_fr, bd=1, relief=RAISED, width=13)
+Report_F_gram = ttk.Button(right_fr)
 Report_F_gram.grid(row = 3, column = 2)
-Report_F_kkal = Label(right_fr, bd=1, relief=RAISED, width=13)
-Report_F_kkal.grid(row = 3, column = 4)
-Report_F_percent = Label(right_fr, bd=1, relief=RAISED, width=13)
-Report_F_percent.grid(row = 3, column = 6)
+Report_F_kkal = ttk.Button(right_fr)
+Report_F_kkal.grid(row = 3, column = 3)
+Report_F_percent = ttk.Button(right_fr)
+Report_F_percent.grid(row = 3, column = 4)
+
 # Hydrocarbons report
-Report_H_name = Label(right_fr, text="Углеводы", bd=1, relief=RAISED, width=13)
+Report_H_name = ttk.Button(right_fr, text="Углеводы")
 Report_H_name.grid(row = 4, column = 1)
-Report_H_gram = Label(right_fr, bd=1, relief=RAISED, width=13)
+Report_H_gram = ttk.Button(right_fr)
 Report_H_gram.grid(row = 4, column = 2)
-Report_H_kkal = Label(right_fr, bd=1, relief=RAISED, width=13)
-Report_H_kkal.grid(row = 4, column = 4)
-Report_H_percent = Label(right_fr, bd=1, relief=RAISED, width=13)
-Report_H_percent.grid(row = 4, column = 6)
+Report_H_kkal = ttk.Button(right_fr)
+Report_H_kkal.grid(row = 4, column = 3)
+Report_H_percent = ttk.Button(right_fr)
+Report_H_percent.grid(row = 4, column = 4)
+
 # total kKal report
-Report_total_kkal_name = Label(right_fr, text="Всего", bd=1, relief=RAISED, width=13)
+Report_total_kkal_name = ttk.Button(right_fr, text="Всего")
 Report_total_kkal_name.grid(row = 5, column = 1)
-Report_total_kkal = Label(right_fr, bd=1, relief=RAISED, width=13)
-Report_total_kkal.grid(row = 5, column = 4)
+Report_total_kkal = ttk.Button(right_fr)
+Report_total_kkal.grid(row = 5, column = 3)
 
 press()
 root.mainloop()
